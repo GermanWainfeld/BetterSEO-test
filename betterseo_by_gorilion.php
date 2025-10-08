@@ -43,7 +43,7 @@ if ( class_exists('Puc_v4_Factory') ) {
     $updateChecker = Puc_v4_Factory::buildUpdateChecker(
         'https://github.com/GermanWainfeld/BetterSEO-test/', 
         __FILE__,
-        'betterseo_by_gorilion' 
+        'BetterSEO-test' 
     );
 
     $updateChecker->setBranch('master');
