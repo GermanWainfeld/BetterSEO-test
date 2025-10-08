@@ -48,9 +48,6 @@ if ( class_exists('Puc_v4_Factory') ) {
 
     $updateChecker->setBranch('master');
 
-    if ( method_exists($updateChecker, 'getVcsApi') && $updateChecker->getVcsApi() ) {
-        $updateChecker->getVcsApi()->enableReleaseAssets();
-    }
 }
 
 /**
