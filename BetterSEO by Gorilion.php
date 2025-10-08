@@ -34,25 +34,21 @@ if (!defined('BETTERSEO_VERSION')) {
  * 1) GITHUB PLUGIN UPDATE CONFIGURATION
  * ------------------------------------------------------------------
  */
-if (!class_exists('Puc_v4_Factory')) {
-    // Require the library if it's available.
-    $puc_library = plugin_dir_path(__FILE__) . 'plugin-update-checker/plugin-update-checker.php';
-    if (file_exists($puc_library)) {
-        require_once $puc_library;
-    }
+$puc_library = plugin_dir_path(__FILE__) . 'plugin-update-checker/plugin-update-checker.php';
+if ( file_exists($puc_library) ) {
+    require_once $puc_library;
 }
 
-if (class_exists('Puc_v4_Factory')) {
-    // Initialize the update checker, pointing to your GitHub repository.
+if ( class_exists('Puc_v4_Factory') ) {
     $updateChecker = Puc_v4_Factory::buildUpdateChecker(
-        'https://github.com/mdeiriondo/BetterSEO',  // Replace with your GitHub repo URL.
-        __FILE__,  // Path to the main plugin file.
-        'plugin_basename(__FILE__)'  // Plugin slug (unique identifier).
+        'https://github.com/tuusuario/BetterSEO', 
+        __FILE__,
+        'betterseo' 
     );
-    // Set the branch (could be 'main' or 'master') used in your repo.
-    $updateChecker->setBranch('main');
 
-	if ( method_exists($updateChecker, 'getVcsApi') && $updateChecker->getVcsApi() ) {
+    $updateChecker->setBranch('master');
+
+    if ( method_exists($updateChecker, 'getVcsApi') && $updateChecker->getVcsApi() ) {
         $updateChecker->getVcsApi()->enableReleaseAssets();
     }
 }
