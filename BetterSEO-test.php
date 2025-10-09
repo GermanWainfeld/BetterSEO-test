@@ -3,7 +3,7 @@
  * Plugin Name: BetterSEO by Gorilion
  * Plugin URI: https://www.gorilion.com/better-seo/
  * Description: Dynamically enable code for Rank Math or Yoast SEO, and update from GitHub.
- * Version:     1.45
+ * Version:     1.46
  * Author:      Gorilion
  * Author URI:  https://www.gorilion.com
  * License:     GPL2
@@ -84,7 +84,7 @@ function gorilion_seo_switcher_options_page()
 {
     ?>
     <div class="wrap">
-        <h1>BetterSEO Configuration</h1>
+        <h1>BetterSEO Configuration -</h1>
         <form method="post" action="options.php">
             <?php
             settings_fields('gorilion_seo_switcher_settings_group');
