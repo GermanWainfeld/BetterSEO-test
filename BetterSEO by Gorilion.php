@@ -37,6 +37,9 @@ $myUpdateChecker = Puc_v4_Factory::buildUpdateChecker(
     'BetterSEO by Gorilion'
 );
 
+//Set the branch that contains the stable release.
+$myUpdateChecker->setBranch('master');
+
 /**
  * ------------------------------------------------------------------
  * 2) ADMIN SETTINGS PAGE
