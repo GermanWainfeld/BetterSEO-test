@@ -3,11 +3,7 @@
  * Plugin Name: BetterSEO by Gorilion
  * Plugin URI: https://www.gorilion.com/better-seo/
  * Description: Dynamically enable code for Rank Math or Yoast SEO, and update from GitHub.
-<<<<<<< HEAD:BetterSEO by Gorilion.php
- * Version:     1.48
-=======
- * Version:     1.45
->>>>>>> parent of 342065e (test10-09-2):BetterSEO-test.php
+ * Version:     1.46
  * Author:      Gorilion
  * Author URI:  https://www.gorilion.com
  * License:     GPL2
@@ -33,12 +29,11 @@ if (!defined('ABSPATH')) {
  * 1) GITHUB PLUGIN UPDATE CONFIGURATION
  * ------------------------------------------------------------------
  */
-
 require 'plugin-update-checker/plugin-update-checker.php';
 $myUpdateChecker = Puc_v4_Factory::buildUpdateChecker(
     'https://github.com/GermanWainfeld/BetterSEO-test/', 
     __FILE__,
-    'BetterSEO by Gorilion'
+    'BetterSEO-test'
 );
 
 //Set the branch that contains the stable release.
