@@ -3,7 +3,7 @@
  * Plugin Name: BetterSEO by Gorilion
  * Plugin URI: https://www.gorilion.com/better-seo/
  * Description: Dynamically enable code for Rank Math or Yoast SEO, and update from GitHub.
- * Version:     1.51
+ * Version:     1.35
  * Author:      Gorilion
  * Author URI:  https://www.gorilion.com
  * License:     GPL2
@@ -32,13 +32,13 @@ if (!defined('ABSPATH')) {
 
 require 'plugin-update-checker/plugin-update-checker.php';
 $myUpdateChecker = Puc_v4_Factory::buildUpdateChecker(
-    'https://github.com/GermanWainfeld/BetterSEO-test/', 
+    'https://github.com/mdeiriondo/BetterSEO', 
     __FILE__,
     'BetterSEO by Gorilion'
 );
 
 //Set the branch that contains the stable release.
-$myUpdateChecker->setBranch('master');
+$myUpdateChecker->setBranch('main');
 
 /**
  * Dashboard update notifications
@@ -71,21 +71,15 @@ add_action('admin_notices', function () use ($myUpdateChecker) {
         'upgrade-plugin_' . $plugin_file
     );
 
-    $dismiss_url = wp_nonce_url(
-        add_query_arg('betterseo_dismiss_update', '1'),
-        'betterseo_dismiss_update'
-    );
-
     // Optional: link to GitHub release notes or changelog
-    $details_url = 'https://github.com/GermanWainfeld/BetterSEO-test/releases';
+    $details_url = 'https://github.com/mdeiriondo/BetterSEO/releases';
 
     // Render the notice
     echo '<div class="notice notice-warning is-dismissible" style="border-left-color:#d63638;">
             <p><strong>BetterSEO by Gorilion</strong>: a new version is available
             (<code>' . esc_html($update->version) . '</code>).
             <a href="' . esc_url($update_url) . '">Update now</a> ·
-            <a href="' . esc_url($details_url) . '" target="_blank" rel="noopener">View details</a> ·
-            <a href="' . esc_url($dismiss_url) . '">Dismiss this notice</a></p>
+            <a href="' . esc_url($details_url) . '" target="_blank" rel="noopener">View details</a>
           </div>';
 });
 
