@@ -25,8 +25,9 @@ if (!defined('ABSPATH')) {
 }
 
 // Define the plugin version constant (used in debugging comments)
-if (!defined('BETTERSEO_VERSION')) {
-    define('BETTERSEO_VERSION', '1.36');
+if ( ! defined('BETTERSEO_VERSION') ) {
+    $data = get_file_data(__FILE__, array('Version' => 'Version'), 'plugin');
+    define('BETTERSEO_VERSION', isset($data['Version']) ? $data['Version'] : '');
 }
 
 /**
