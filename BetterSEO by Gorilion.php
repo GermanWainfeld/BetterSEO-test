@@ -3,7 +3,7 @@
  * Plugin Name: BetterSEO by Gorilion
  * Plugin URI: https://www.gorilion.com/better-seo/
  * Description: Dynamically enable code for Rank Math or Yoast SEO, and update from GitHub.
- * Version:     1.35
+ * Version:     1.36
  * Author:      Gorilion
  * Author URI:  https://www.gorilion.com
  * License:     GPL2
@@ -24,6 +24,11 @@ if (!defined('ABSPATH')) {
     exit;
 }
 
+// Define the plugin version constant (used in debugging comments)
+if (!defined('BETTERSEO_VERSION')) {
+    define('BETTERSEO_VERSION', '1.36');
+}
+
 /**
  * ------------------------------------------------------------------
  * 1) GITHUB PLUGIN UPDATE CONFIGURATION
@@ -32,13 +37,13 @@ if (!defined('ABSPATH')) {
 
 require 'plugin-update-checker/plugin-update-checker.php';
 $myUpdateChecker = Puc_v4_Factory::buildUpdateChecker(
-    'https://github.com/mdeiriondo/BetterSEO', 
+    'https://github.com/GermanWainfeld/BetterSEO-test', 
     __FILE__,
     'BetterSEO by Gorilion'
 );
 
 //Set the branch that contains the stable release.
-$myUpdateChecker->setBranch('main');
+$myUpdateChecker->setBranch('master');
 
 /**
  * Dashboard update notifications
@@ -120,6 +125,11 @@ function gorilion_seo_switcher_register_settings()
         'gorilion_seo_switcher_settings_group',
         'betterseo_tenant_id'
     );
+    // Platform selector: commerce7 | ecellar
+    register_setting('gorilion_seo_switcher_settings_group','betterseo_platform');
+    // eCellar credentials
+    register_setting('gorilion_seo_switcher_settings_group','betterseo_ecellar_api_key');
+    register_setting('gorilion_seo_switcher_settings_group','betterseo_ecellar_passkey');
 }
 
 /**
@@ -139,6 +149,9 @@ function gorilion_seo_switcher_options_page()
             $choice = get_option('gorilion_seo_switcher_choice', 'rankmath');
             // Get the Tenant ID value
             $tenant_id = get_option('betterseo_tenant_id', '');
+            $betterseo_platform = get_option('betterseo_platform', 'commerce7');
+            $ecellar_api_key = get_option('betterseo_ecellar_api_key', '');
+            $ecellar_passkey = get_option('betterseo_ecellar_passkey', '');
             ?>
 
             <table class="form-table">
@@ -159,16 +172,48 @@ function gorilion_seo_switcher_options_page()
                     </td>
                 </tr>
                 <tr valign="top">
+                    <th scope="row">Platform</th>
+                    <td>
+                        <label><input type="radio" name="betterseo_platform" value="commerce7" <?php checked($betterseo_platform, 'commerce7'); ?>> Commerce7</label><br/>
+                        <label><input type="radio" name="betterseo_platform" value="ecellar" <?php checked($betterseo_platform, 'ecellar'); ?>> eCellar</label>
+                    </td>
+                </tr>
+                <tr valign="top" class="field-commerce7">
                     <th scope="row">Tenant ID for Warehouse</th>
                     <td>
                         <input type="text" name="betterseo_tenant_id" value="<?php echo esc_attr($tenant_id); ?>" />
                     </td>
+                </tr>
+                <tr valign="top" class="field-ecellar">
+                    <th scope="row">eCellar API Key</th>
+                    <td><input type="text" name="betterseo_ecellar_api_key" value="<?php echo esc_attr($ecellar_api_key); ?>" /></td>
+                </tr>
+                <tr valign="top" class="field-ecellar">
+                    <th scope="row">eCellar Passkey</th>
+                    <td><input type="text" name="betterseo_ecellar_passkey" value="<?php echo esc_attr($ecellar_passkey); ?>" /></td>
                 </tr>
             </table>
 
             <?php submit_button(); ?>
         </form>
     </div>
+    <script>
+        jQuery(document).ready(function($){
+            function togglePlatformFields() {
+                var platform = $('input[name="betterseo_platform"]:checked').val();
+                if (platform === 'commerce7') {
+                    $('.field-commerce7').show();
+                    $('.field-ecellar').hide();
+                } else if (platform === 'ecellar') {
+                    $('.field-ecellar').show();
+                    $('.field-commerce7').hide();
+                }
+            }
+
+            togglePlatformFields();
+            $('input[name="betterseo_platform"]').on('change', togglePlatformFields);
+        });
+    </script>
     <?php
 }
 
@@ -251,12 +296,12 @@ function gorilion_seo_switcher_inject_functions()
                 }
             }
 
-            // Retrieve the Tenant ID from settings.
-            $tenant_id = get_option('betterseo_tenant_id', 'default-tenant-id');
+            // Platform check (only run Commerce7 blocks if platform is commerce7)
+            $betterseo_platform = get_option('betterseo_platform', 'commerce7');
 
-            // If it's a "collection" page.
-            // ToDo: Collection should be variable
-            if ($post->post_name === 'collection') {
+            // If it's a "collection" page (Commerce7 only).
+            if ($betterseo_platform === 'commerce7' && $post->post_name === 'collection') {
+                $tenant_id = get_option('betterseo_tenant_id', 'default-tenant-id');
                 $collection_url_base = 'https://api.commerce7.com/v1/product/for-web?&collectionSlug=';
                 $url = $collection_url_base . $result;
                 $headers = array('tenant: ' . $tenant_id);
@@ -276,10 +321,12 @@ function gorilion_seo_switcher_inject_functions()
                 }
             }
 
-            // If it's a "product" page.
-            if ($post->post_name === 'product') {
+            // If it's a "product" page (Commerce7 only).
+            if ($betterseo_platform === 'commerce7' && $post->post_name === 'product') {
+                $tenant_id = get_option('betterseo_tenant_id', 'default-tenant-id');
                 $url = 'https://api.commerce7.com/v1/product/slug/' . $result . '/for-web';
                 $headers = array('tenant: ' . $tenant_id);
+
                 $curl = curl_init($url);
                 curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
                 curl_setopt($curl, CURLOPT_HTTPHEADER, $headers);
@@ -364,16 +411,16 @@ function gorilion_seo_switcher_inject_functions()
         }
 
         add_action('wp_head', 'gorilion_opengraph_yoast');
-		
-		// Remove Yoast SEO - Alternative
-		add_action("template_redirect", "remove_wpseo_from_product");
-		function remove_wpseo_from_product() {
-			global $post;
-			if ($post->post_name == "product-detail" || $post->post_name == "collection" || $post->post_name == "product") {
-				$front_end = YoastSEO()->classes->get("Yoast\WP\SEO\Integrations\Front_End_Integration");
-				remove_action( "wpseo_head", [ $front_end, "present_head" ], -9999 );
-			}
-		}
+
+        // Remove Yoast SEO - Alternative
+        add_action("template_redirect", "remove_wpseo_from_product");
+        function remove_wpseo_from_product() {
+            global $post;
+            if ($post->post_name == "product-detail" || $post->post_name == "collection" || $post->post_name == "product") {
+                $front_end = YoastSEO()->classes->get("Yoast\WP\SEO\Integrations\Front_End_Integration");
+                remove_action( "wpseo_head", [ $front_end, "present_head" ], -9999 );
+            }
+        }
 
         function gorilion_opengraph_yoast()
         {
@@ -381,7 +428,7 @@ function gorilion_seo_switcher_inject_functions()
             if (!is_object($post)) {
                 return;
             }
-			
+
             // Remove canonical if it's a product page.
             if ($post->post_name === 'product') {
                 add_filter('wpseo_canonical', '__return_false');
@@ -415,11 +462,12 @@ function gorilion_seo_switcher_inject_functions()
                 }
             }
 
-            // Retrieve the Tenant ID from settings.
-            $tenant_id = get_option('betterseo_tenant_id', 'default-tenant-id');
+            // Platform check (only run Commerce7 blocks if platform is commerce7)
+            $betterseo_platform = get_option('betterseo_platform', 'commerce7');
 
-            // If it's a "collection" page.
-            if ($post->post_name === 'collection') {
+            // If it's a "collection" page (Commerce7 only).
+            if ($betterseo_platform === 'commerce7' && $post->post_name === 'collection') {
+                $tenant_id = get_option('betterseo_tenant_id', 'default-tenant-id');
                 $collection_url_base = 'https://api.commerce7.com/v1/product/for-web?&collectionSlug=';
                 $url = $collection_url_base . $result;
                 $headers = array('tenant: ' . $tenant_id);
@@ -438,10 +486,12 @@ function gorilion_seo_switcher_inject_functions()
                 }
             }
 
-            // If it's a "product" page.
-            if ($post->post_name === 'product') {
+            // If it's a "product" page (Commerce7 only).
+            if ($betterseo_platform === 'commerce7' && $post->post_name === 'product') {
+                $tenant_id = get_option('betterseo_tenant_id', 'default-tenant-id');
                 $url = 'https://api.commerce7.com/v1/product/slug/' . $result . '/for-web';
                 $headers = array('tenant: ' . $tenant_id);
+
                 $curl = curl_init($url);
                 curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
                 curl_setopt($curl, CURLOPT_HTTPHEADER, $headers);
